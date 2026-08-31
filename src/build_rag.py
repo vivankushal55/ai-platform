@@ -10,7 +10,7 @@ df = pd.read_csv("data/tickets.csv")
 
 # The dataset is big (26k rows). For building/testing, use a slice
 # so embedding is fast. We'll scale up later once it works.
-df = df.head(2000).reset_index(drop=True)
+df = df.reset_index(drop=True)
 
 # We embed the customer QUESTION (instruction). When a new question
 # comes in, we find the closest past questions and return THEIR responses.
