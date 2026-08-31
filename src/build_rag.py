@@ -1,58 +1,38 @@
+import os
 import pandas as pd
 import numpy as np
 import faiss
 from sentence_transformers import SentenceTransformer
 
-# ---------------------------------------------------------------
-# STEP 1: Load the data we saved on Day 1
-# ---------------------------------------------------------------
-df = pd.read_csv("data/tickets.csv")
+INDEX_PATH = "data/faiss.index"
 
-# The dataset is big (26k rows). For building/testing, use a slice
-# so embedding is fast. We'll scale up later once it works.
-df = df.reset_index(drop=True)
-
-# We embed the customer QUESTION (instruction). When a new question
-# comes in, we find the closest past questions and return THEIR responses.
+# Load data (same order every time, so the index rows line up)
+df = pd.read_csv("data/tickets.csv").reset_index(drop=True)
 questions = df["instruction"].tolist()
 answers = df["response"].tolist()
 
-# ---------------------------------------------------------------
-# STEP 2: Load the embedding model
-# all-MiniLM-L6-v2 is small, fast, and turns text into 384 numbers.
-# First run downloads it (~90MB), then it's cached.
-# ---------------------------------------------------------------
+# Model is needed to embed incoming queries (fast to load)
 print("Loading embedding model...")
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# ---------------------------------------------------------------
-# STEP 3: Embed every question -> a matrix of shape (2000, 384)
-# Each row is one question turned into 384 numbers.
-# ---------------------------------------------------------------
-print("Embedding questions (this takes a minute)...")
-embeddings = model.encode(questions, show_progress_bar=True)
-embeddings = np.array(embeddings).astype("float32")  # FAISS needs float32
+# Build the index ONCE, then reuse the saved copy
+if os.path.exists(INDEX_PATH):
+    print("Loading cached FAISS index...")
+    index = faiss.read_index(INDEX_PATH)
+else:
+    print("Embedding 26k questions (one-time, ~1-2 min)...")
+    embeddings = model.encode(questions, show_progress_bar=True).astype("float32")
+    index = faiss.IndexFlatL2(embeddings.shape[1])
+    index.add(embeddings)
+    faiss.write_index(index, INDEX_PATH)
+    print("Saved index to disk.")
 
-# ---------------------------------------------------------------
-# STEP 4: Build the FAISS index
-# IndexFlatL2 = measures straight-line distance between vectors.
-# Smaller distance = more similar meaning.
-# ---------------------------------------------------------------
-dimension = embeddings.shape[1]          # 384
-index = faiss.IndexFlatL2(dimension)
-index.add(embeddings)                    # load all vectors into the index
-print(f"Index built with {index.ntotal} vectors.")
+print(f"Index ready with {index.ntotal} vectors.")
 
-# ---------------------------------------------------------------
-# STEP 5: Search! Define a function that retrieves for any question.
-# ---------------------------------------------------------------
+
 def retrieve(query, k=3):
-    """Return the top-k most similar past Q&As for a new query."""
-    # Embed the incoming question the SAME way as the stored ones
     q_vec = model.encode([query]).astype("float32")
-    # Ask FAISS for the k nearest stored vectors
     distances, indices = index.search(q_vec, k)
-    # indices[0] holds the row numbers of the closest matches
     results = []
     for rank, idx in enumerate(indices[0]):
         results.append({
@@ -63,14 +43,7 @@ def retrieve(query, k=3):
         })
     return results
 
-# ---------------------------------------------------------------
-# STEP 6: Try it out
-# ---------------------------------------------------------------
+
 if __name__ == "__main__":
-    test_query = "how do I cancel my order?"
-    print(f"\nQuery: {test_query}\n")
-    for r in retrieve(test_query):
-        print(f"[{r['rank']}] distance={r['distance']:.2f}")
-        print(f"    matched Q: {r['matched_question']}")
-        print(f"    answer: {r['answer'][:120]}...")
-        print()
+    for r in retrieve("how do I cancel my order?"):
+        print(f"[{r['rank']}] {r['matched_question']}")
