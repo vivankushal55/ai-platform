@@ -4,10 +4,14 @@ import numpy as np
 import faiss
 from sentence_transformers import SentenceTransformer
 
-INDEX_PATH = "data/faiss.index"
+# Anchor all paths to the project root, so this works no matter
+# where the script is launched from (terminal, uvicorn, Docker).
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+INDEX_PATH = os.path.join(BASE_DIR, "data", "faiss.index")
+DATA_PATH = os.path.join(BASE_DIR, "data", "tickets.csv")
 
 # Load data (same order every time, so the index rows line up)
-df = pd.read_csv("data/tickets.csv").reset_index(drop=True)
+df = pd.read_csv(DATA_PATH).reset_index(drop=True)
 questions = df["instruction"].tolist()
 answers = df["response"].tolist()
 

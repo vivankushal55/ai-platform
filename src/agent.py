@@ -1,5 +1,7 @@
 import os
 import joblib
+import os
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 from typing import TypedDict
 from dotenv import load_dotenv
 import google.generativeai as genai
@@ -13,7 +15,7 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 router_model = genai.GenerativeModel("gemini-3.5-flash-lite")
 
 # Load the classifier you trained on Day 5
-classifier = joblib.load("data/classifier.joblib")
+classifier = joblib.load(os.path.join(BASE_DIR, "data", "classifier.joblib"))
 
 
 # ---------------------------------------------------------------
