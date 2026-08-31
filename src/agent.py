@@ -10,7 +10,7 @@ from rag_answer import answer as rag_answer
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-router_model = genai.GenerativeModel("gemini-3.6-flash")
+router_model = genai.GenerativeModel("gemini-3.5-flash-lite")
 
 # Load the classifier you trained on Day 5
 classifier = joblib.load("data/classifier.joblib")

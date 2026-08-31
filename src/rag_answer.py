@@ -7,7 +7,7 @@ from build_rag import retrieve
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-3.6-flash")
+model = genai.GenerativeModel("gemini-3.5-flash-lite")
 
 def answer(query, k=3):
     matches = retrieve(query, k=k)

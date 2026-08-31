@@ -27,7 +27,9 @@ The agent routes every question through a decision node:
 ## Results
 
 - Ticket classifier: 99.6% accuracy on held-out templated data
-- RAG: grounded answers with no invented facts, drawn from retrieved examples
+- RAG: **faithfulness 4.75/5, relevancy 5.0/5** on a held-out question set,
+  scored via an LLM-as-judge evaluation (faithfulness = answer grounded in
+  retrieved context; relevancy = answer addresses the question)
 
 ## Running it
 
