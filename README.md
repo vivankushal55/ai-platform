@@ -43,3 +43,16 @@ python src/agent.py
 ## Dataset
 
 Bitext Customer Support dataset (~27k tagged support queries).
+
+## Run with Docker
+
+The entire platform is containerized:
+
+```bash
+docker build -t support-platform .
+docker run -p 8000:8000 --env-file .env support-platform
+```
+
+Then open http://127.0.0.1:8000/docs for the interactive API, or POST to `/ask`.
+The image bundles the code, FAISS index, and trained classifier, so it runs
+identically on any machine. Provide a `GEMINI_API_KEY` in a `.env` file.
