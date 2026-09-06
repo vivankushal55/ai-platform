@@ -1,3 +1,5 @@
+![tests](https://github.com/vivankushal55/ai-platform/actions/workflows/tests.yml/badge.svg)
+
 # Support Intelligence Platform
 
 An agentic AI system for customer support. An LLM-powered router reads each
