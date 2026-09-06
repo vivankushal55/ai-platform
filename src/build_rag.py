@@ -9,6 +9,9 @@ from sentence_transformers import SentenceTransformer
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INDEX_PATH = os.path.join(BASE_DIR, "data", "faiss.index")
 DATA_PATH = os.path.join(BASE_DIR, "data", "tickets.csv")
+# Fallback to the small sample (used in CI where the full dataset isn't committed)
+if not os.path.exists(DATA_PATH):
+    DATA_PATH = os.path.join(BASE_DIR, "tests", "sample_tickets.csv")
 
 # Load data (same order every time, so the index rows line up)
 df = pd.read_csv(DATA_PATH).reset_index(drop=True)
