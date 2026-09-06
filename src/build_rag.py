@@ -31,6 +31,7 @@ else:
     embeddings = model.encode(questions, show_progress_bar=True).astype("float32")
     index = faiss.IndexFlatL2(embeddings.shape[1])
     index.add(embeddings)
+    os.makedirs(os.path.dirname(INDEX_PATH), exist_ok=True)
     faiss.write_index(index, INDEX_PATH)
     print("Saved index to disk.")
 
